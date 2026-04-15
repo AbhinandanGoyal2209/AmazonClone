@@ -1,0 +1,75 @@
+:root {
+  --amazon-bg: #eaeded;
+  --amazon-header: #131921;
+  --amazon-header-2: #232f3e;
+  --amazon-accent: #febd69;
+  --amazon-accent-2: #f3a847;
+  --amazon-link: #007185;
+  --text: #0f1111;
+  --muted: #565959;
+  --card: #ffffff;
+  --border: #d5d9d9;
+  --shadow: rgba(15, 17, 17, 0.15) 0 2px 5px 0;
+  --radius: 8px;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
+  background: var(--amazon-bg);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--amazon-bg);
+}
+
+a {
+  color: var(--amazon-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.container {
+  width: 1200px;
+  max-width: calc(100% - 24px);
+  margin: 0 auto;
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid #fcd200;
+  background: linear-gradient(#ffd77f, var(--amazon-accent));
+  color: #111;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn:hover {
+  filter: brightness(0.98);
+}
+
+.btn.secondary {
+  border-color: #adb1b8;
+  background: linear-gradient(#f7f8fa, #e7e9ec);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
