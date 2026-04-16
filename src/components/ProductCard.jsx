@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useCart } from '../state/cart.jsx'
+import { useWishlist } from '../state/wishlist.jsx'
+import { useState } from 'react'
 
 function formatINR(n) {
   return `₹${Number(n).toFixed(0)}`
@@ -16,7 +18,7 @@ function Stars({ rating }) {
     ...Array.from({ length: empty }, () => '☆'),
   ].join('')
   return (
-    <span aria-label={`${r.toFixed(1)} out of 5 stars`} style={{ color: '#f08804' }}>
+    <span aria-label={`${r.toFixed(1)} out of 5 stars`} style={{ color: 'var(--amazon-accent)', textShadow: '0 0 5px rgba(255,153,0,0.4)' }}>
       {stars}
     </span>
   )
@@ -24,84 +26,127 @@ function Stars({ rating }) {
 
 export function ProductCard({ product }) {
   const { add } = useCart()
+  const { wishlist, toggleWishlist, isInWishlist } = useWishlist()
+  const [isAdded, setIsAdded] = useState(false)
   const img = product.images?.[0]
+  
+  const inWishlist = isInWishlist(product.id)
+
+  const handleAddToCart = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    add(product.id, 1)
+    setIsAdded(true)
+    setTimeout(() => setIsAdded(false), 2000)
+  }
+
+  const handleWishlist = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    toggleWishlist(product)
+  }
 
   return (
-    <div
-      className="card"
-      style={{
-        padding: 12,
-        display: 'grid',
-        gap: 10,
-        borderRadius: 10,
-        boxShadow: 'rgba(15, 17, 17, 0.1) 0 2px 5px 0',
-      }}
-    >
-      <Link to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
+      <button 
+        className={`wishlist-btn ${inWishlist ? 'active' : ''}`} 
+        onClick={handleWishlist}
+        title={inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+      >
+        {inWishlist ? '❤️' : '🤍'}
+      </button>
+
+      <Link to={`/product/${product.id}`} style={{ textDecoration: 'none', display: 'flex', flex: 1 }}>
         <div
+          className="card card-3d"
           style={{
-            background: '#f7f7f7',
-            borderRadius: 8,
-            height: 180,
-            display: 'grid',
-            placeItems: 'center',
-            overflow: 'hidden',
+            padding: 16,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+            cursor: 'pointer',
+            flex: 1
           }}
         >
-          <img
-            src={img || 'https://placehold.co/600x600?text=Product'}
-            alt={product.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            crossOrigin="anonymous"
-            onError={(e) => {
-              e.currentTarget.src = 'https://placehold.co/600x600?text=No+Image'
-            }}
-          />
-        </div>
-        <div style={{ color: 'var(--text)', fontSize: 14, lineHeight: '18px' }}>
-          {product.name}
-        </div>
-      </Link>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-        <Stars rating={product.rating} />
-        <span style={{ color: 'var(--amazon-link)' }}>
-          {Number(product.ratingCount || 0).toLocaleString()}
-        </span>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-        <span style={{ fontSize: 20, fontWeight: 900 }}>{formatINR(product.price)}</span>
-        <span style={{ color: 'var(--muted)', fontSize: 12 }}>
-          M.R.P. <s>{formatINR(Math.round(Number(product.price) * 1.15))}</s>
-        </span>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {product.isPrime ? (
-          <span
+          {/* Image Container */}
+          <div
             style={{
-              fontSize: 11,
-              fontWeight: 800,
-              color: '#0f1111',
-              background: '#dbefff',
-              border: '1px solid #b7dfff',
-              padding: '2px 6px',
-              borderRadius: 999,
+              background: 'rgba(255,255,255,0.02)',
+              borderRadius: 12,
+              height: 220,
+              display: 'grid',
+              placeItems: 'center',
+              overflow: 'hidden',
+              position: 'relative',
+              boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)'
             }}
           >
-            Prime
-          </span>
-        ) : null}
-        <span style={{ fontSize: 11, color: 'var(--muted)' }}>FREE Delivery</span>
-      </div>
+            <img
+              src={img || 'https://placehold.co/600x600?text=Product'}
+              alt={product.name}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              }}
+              loading="lazy"
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+              onError={(e) => {
+                e.currentTarget.src = 'https://placehold.co/600x600?text=No+Image'
+              }}
+            />
+            {product.isPrime && (
+              <div
+                style={{
+                  position: 'absolute', top: 10, left: 10,
+                  background: 'linear-gradient(135deg, #29b6f6, #0288d1)',
+                  color: '#fff', padding: '4px 10px',
+                  borderRadius: 6, fontSize: 11, fontWeight: 800,
+                  boxShadow: '0 4px 10px rgba(41, 182, 246, 0.4)'
+                }}
+              >
+                PRIME
+              </div>
+            )}
+          </div>
 
-      <button className="btn" onClick={() => add(product.id, 1)}>
-        Add to Cart
-      </button>
+          <div className="flex-col justify-between" style={{ flex: 1, gap: 10 }}>
+            <div>
+               <div className="text-clamp" style={{ fontSize: 15, fontWeight: 600, color: '#fff', minHeight: 44, lineHeight: 1.4 }}>
+                 {product.name}
+               </div>
+
+               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, marginTop: 8 }}>
+                 <Stars rating={product.rating} />
+                 <span style={{ color: 'var(--amazon-link)' }}>
+                   {Number(product.ratingCount || 0).toLocaleString()}
+                 </span>
+               </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span className="gradient-text" style={{ fontSize: 22, fontWeight: 900 }}>
+                {formatINR(product.price)}
+              </span>
+              <span style={{ color: 'var(--muted)', fontSize: 13, textDecoration: 'line-through' }}>
+                {formatINR(Math.round(Number(product.price) * 1.15))}
+              </span>
+            </div>
+
+            <button
+              className="btn flex justify-center items-center"
+              onClick={handleAddToCart}
+              style={{ width: '100%', marginTop: 'auto', background: isAdded ? '#4caf50' : '' }}
+            >
+              {isAdded ? '✓ Added' : 'Add to Cart'}
+            </button>
+          </div>
+        </div>
+      </Link>
     </div>
   )
 }
-

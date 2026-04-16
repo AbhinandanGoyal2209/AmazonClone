@@ -79,5 +79,6 @@ export const api = {
   createStripeCheckoutSession: () =>
     request('/api/stripe/checkout-session', { method: 'POST' }),
   getOrder: (id) => request(`/api/orders/${id}`),
+  listOrders: () => request('/api/orders'),
 }
 

@@ -57,3 +57,12 @@ Frontend runs on `http://localhost:5173`.
 
 - **Frontend**: optional `VITE_API_BASE` (defaults to `http://localhost:4000`)
 - **Backend**: see `server/.env.example`
+
+### Gmail Configuration for Order Emails
+
+To send real order confirmation emails to users through Gmail:
+1. Go to your Google Account > Security > 2-Step Verification.
+2. Scroll down to **App passwords**.
+3. Create a new App password for "Amazon Clone".
+4. Copy the 16-character password.
+5. In `server/.env`, set `SMTP_USER` to your Gmail address and `SMTP_PASS` to the app password. Ensure `SMTP_HOST="smtp.gmail.com"` and `SMTP_PORT=465`.

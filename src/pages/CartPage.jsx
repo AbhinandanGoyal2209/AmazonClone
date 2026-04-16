@@ -42,12 +42,13 @@ export function CartPage() {
                       it.product.images?.[0] || 'https://placehold.co/300x300?text=Product'
                     }
                     alt={it.product.name}
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/300x300?text=Product' }}
                     style={{
                       width: 120,
                       height: 120,
                       objectFit: 'cover',
                       borderRadius: 8,
-                      background: '#f7f7f7',
+                      background: 'rgba(255, 255, 255, 0.05)',
                     }}
                   />
 

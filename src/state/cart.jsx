@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api.js'
 import { useToast } from './toast.jsx'
+import { useAuth } from './auth.jsx'
 
 const CartContext = createContext(null)
 
@@ -27,9 +28,11 @@ export function CartProvider({ children }) {
     }
   }
 
+  const { user } = useAuth()
+  
   useEffect(() => {
     refresh()
-  }, [])
+  }, [user?.id])
 
   async function add(productId, quantity = 1) {
     await api.addToCart({ productId, quantity })

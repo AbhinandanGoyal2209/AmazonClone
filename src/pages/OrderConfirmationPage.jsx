@@ -46,8 +46,7 @@ export function OrderConfirmationPage() {
               Your order ID is <b>{order.id}</b>
             </div>
             <div style={{ color: 'var(--muted)', fontSize: 13 }}>
-              We&apos;ve sent (not really) a confirmation email. This is a demo per
-              assignment.
+              We&apos;ve sent a confirmation email containing your order details.
             </div>
           </div>
         )}

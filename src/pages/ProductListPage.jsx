@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api.js'
 import { ProductCard } from '../components/ProductCard.jsx'
+import { TodaysDeal } from '../components/TodaysDeal.jsx'
 
 export function ProductListPage() {
   const [params, setParams] = useSearchParams()
@@ -65,71 +66,95 @@ export function ProductListPage() {
   }
 
   return (
-    <div className="container">
-      <div
-        className="card"
-        style={{
-          padding: 18,
-          marginBottom: 14,
-          background:
-            'linear-gradient(90deg, rgba(254,189,105,0.35) 0%, rgba(255,255,255,0.92) 55%, rgba(255,255,255,0.92) 100%)',
-          border: '1px solid rgba(213,217,217,0.9)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-          <div>
-            <div style={{ fontSize: 24, fontWeight: 900, letterSpacing: -0.2 }}>
-              {title}
-            </div>
-            <div style={{ color: 'var(--muted)', fontSize: 13, marginTop: 6 }}>
-              {loading
-                ? 'Loading products...'
-                : `${products.length} product${products.length === 1 ? '' : 's'}`}
-              {error ? ` • ${error.message}` : ''}
-            </div>
-          </div>
-          <div style={{ alignSelf: 'center', color: 'var(--muted)', fontSize: 12 }}>
-            Prime-style delivery, great deals, fast checkout
+    <div className="container" style={{ paddingTop: 24, paddingBottom: 24 }}>
+      {/* Hero Banner */}
+      <div className="promo-banner">
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <div className="promo-title" style={{ color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{title}</div>
+          <div className="promo-desc">
+            {loading
+              ? '⏳ Fetching the best products...'
+              : `Discovered ${products.length} premium product${products.length === 1 ? '' : 's'} just for you.`}
+            {error ? ` • ⚠️ ${error.message}` : ''}
           </div>
         </div>
+        {/* Decorative 3D elements in banner */}
+        <div style={{ position: 'absolute', right: '-5%', top: '-20%', width: 300, height: 300, background: 'radial-gradient(circle, rgba(255,153,0,0.4) 0%, transparent 60%)', filter: 'blur(30px)', opacity: 0.8 }} />
       </div>
 
       <div className="gridLayout">
-        <aside className="card" style={{ padding: 12, alignSelf: 'start' }}>
-          <div style={{ fontWeight: 700, marginBottom: 10 }}>Department</div>
-          <div style={{ display: 'grid', gap: 8 }}>
+        {/* Sidebar */}
+        <aside className="card" style={{ padding: 20, alignSelf: 'start', position: 'sticky', top: 100 }}>
+          <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 18, color: 'var(--text)' }}>
+            🏷️ Departments
+          </div>
+          <div style={{ display: 'grid', gap: 10 }}>
             <button
-              className="btn secondary"
-              style={{ textAlign: 'left' }}
+              className={`btn ${!category ? '' : 'secondary'}`}
+              style={{ textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
               onClick={() => setCategory('')}
             >
-              All categories
+              <span>All Premium</span>
+              {!category && <span>✨</span>}
             </button>
             {categories.map((c) => (
               <button
                 key={c}
                 className={`btn ${c === category ? '' : 'secondary'}`}
-                style={{ textAlign: 'left' }}
+                style={{ textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 onClick={() => setCategory(c)}
               >
-                {c}
+                <span>{c}</span>
+                {c === category && <span>✨</span>}
               </button>
             ))}
           </div>
         </aside>
 
-        <section style={{ display: 'grid', gap: 12 }}>
+        <section style={{ display: 'grid', gap: 24 }}>
+          {/* Today's Deals Block */}
+          {!search && !category && products.length > 0 ? (
+            <div>
+              <div
+                style={{
+                  fontSize: 24,
+                  fontWeight: 900,
+                  marginBottom: 16,
+                  color: 'var(--text)',
+                }}
+              >
+                ⚡ <span className="gradient-text">Today's Deals</span>
+              </div>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                  gap: 16,
+                  marginBottom: 32,
+                }}
+              >
+                {products.slice(0, 4).map((p) => (
+                  <TodaysDeal key={p.id} product={p} />
+                ))}
+              </div>
+              <hr style={{ border: 'none', borderTop: '1px solid var(--border)', marginBottom: 32 }} />
+            </div>
+          ) : null}
 
-          <div
-            className="productGrid"
-          >
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+          {/* Main Product Grid */}
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 16 }}>
+              📦 <span className="gradient-text">Featured Selection</span>
+            </div>
+            <div className="productGrid">
+              {products.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
           </div>
 
           {!loading && products.length === 0 ? (
-            <div className="card" style={{ padding: 16 }}>
+            <div className="card" style={{ padding: 32, textAlign: 'center', fontSize: 18 }}>
               No products found.
             </div>
           ) : null}

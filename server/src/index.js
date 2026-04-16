@@ -96,7 +96,25 @@ app.post('/api/auth/signup', async (req, res) => {
   const passwordHash = await bcrypt.hash(password, 10)
   const user = await prisma.user.create({
     data: { email, name, passwordHash, cart: { create: {} } },
+    include: { cart: true }
   })
+
+  // Migrate items from default user if any
+  const defaultUser = await prisma.user.findUnique({ where: { email: DEFAULT_USER_EMAIL } })
+  if (defaultUser) {
+    const defaultCart = await prisma.cart.findUnique({ where: { userId: defaultUser.id }, include: { items: true } })
+    if (defaultCart?.items?.length) {
+      await prisma.cartItem.createMany({
+        data: defaultCart.items.map(it => ({
+          cartId: user.cart.id,
+          productId: it.productId,
+          quantity: it.quantity
+        }))
+      })
+      await prisma.cartItem.deleteMany({ where: { cartId: defaultCart.id } })
+    }
+  }
+
   const token = signToken(user)
   res.json({ token, user: { id: user.id, email: user.email, name: user.name } })
 })
@@ -109,6 +127,26 @@ app.post('/api/auth/login', async (req, res) => {
   if (!user?.passwordHash) return res.status(400).json({ error: 'Invalid credentials' })
   const ok = await bcrypt.compare(password, user.passwordHash)
   if (!ok) return res.status(400).json({ error: 'Invalid credentials' })
+  
+  // Migrate items from default cart
+  const defaultUser = await prisma.user.findUnique({ where: { email: DEFAULT_USER_EMAIL } })
+  if (defaultUser) {
+    const defaultCart = await prisma.cart.findUnique({ where: { userId: defaultUser.id }, include: { items: true } })
+    const userCart = await prisma.cart.findUnique({ where: { userId: user.id } })
+    
+    if (defaultCart?.items?.length && userCart) {
+      for (const item of defaultCart.items) {
+        const existing = await prisma.cartItem.findUnique({ where: { cartId_productId: { cartId: userCart.id, productId: item.productId } } })
+        if (existing) {
+          await prisma.cartItem.update({ where: { id: existing.id }, data: { quantity: Math.min(existing.quantity + item.quantity, 10) } })
+        } else {
+          await prisma.cartItem.create({ data: { cartId: userCart.id, productId: item.productId, quantity: item.quantity } })
+        }
+      }
+      await prisma.cartItem.deleteMany({ where: { cartId: defaultCart.id } })
+    }
+  }
+
   const token = signToken(user)
   res.json({ token, user: { id: user.id, email: user.email, name: user.name } })
 })
@@ -287,17 +325,39 @@ app.post('/api/orders', async (req, res) => {
 
   await prisma.cartItem.deleteMany({ where: { cartId: cart.id } })
 
-  // Fire-and-forget email. In real apps you'd do this via a queue.
-  if (user.email && user.passwordHash) {
+  // Send order confirmation email to user
+  if (user.email) {
     sendOrderConfirmationEmail({
       to: user.email,
       orderId: order.id,
       items: cart.items.map((it) => ({ product: it.product, quantity: it.quantity })),
       subtotal,
-    }).catch((e) => console.error('Email error', e))
+    }).catch((e) => console.error('Email error:', e))
   }
 
   res.json({ orderId: order.id })
+})
+
+app.get('/api/orders', async (req, res) => {
+  const user = await getUserFromReq(req)
+  const orders = await prisma.order.findMany({
+    where: { userId: user.id },
+    include: { items: { include: { product: true } } },
+    orderBy: { createdAt: 'desc' }
+  })
+  res.json({
+    orders: orders.map((order) => ({
+      id: order.id,
+      subtotal: order.subtotal,
+      createdAt: order.createdAt,
+      items: order.items.map((it) => ({
+        id: it.id,
+        quantity: it.quantity,
+        unitPrice: it.unitPrice,
+        product: toProductDTO(it.product),
+      })),
+    })),
+  })
 })
 
 app.get('/api/orders/:id', async (req, res) => {

@@ -38,7 +38,7 @@ export function ToastProvider({ children }) {
               padding: 12,
               width: 320,
               borderLeft: '4px solid var(--amazon-accent-2)',
-              background: '#fff',
+              background: 'var(--amazon-bg)',
             }}
           >
             <div style={{ fontWeight: 900, marginBottom: 4 }}>Added to Cart</div>
