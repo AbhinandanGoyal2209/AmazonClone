@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "buildCommand": "npx prisma generate",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
   "builds": [
     {
       "src": "src/index.js",
@@ -11,10 +14,5 @@
       "src": "/(.*)",
       "dest": "src/index.js"
     }
-  ],
-  "env": {
-    "DATABASE_URL": "@DATABASE_URL",
-    "JWT_SECRET": "@JWT_SECRET",
-    "CORS_ORIGIN": "@CORS_ORIGIN"
-  }
+  ]
 }
