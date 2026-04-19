@@ -1,4 +1,5 @@
 ## Amazon Clone (Scaler SDE Intern Fullstack Assignment)
+<img width="1187" height="731" alt="image" src="https://github.com/user-attachments/assets/f4219748-ce7c-49ae-85c3-6647ae51aac0" />
 
 Functional e-commerce app implementing the assignment’s **must-have** features:
 
